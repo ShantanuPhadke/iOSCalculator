@@ -16,6 +16,8 @@ class ViewController: UIViewController {
     
     //Property -> Instance Variable of a class
     
+    var myBrain = CalculatorBrain()
+    
     @IBOutlet weak var display: UILabel!//We have created an Outlet for the UILabel on our UI display
     //UILabel is an Optional -> gets initialized to nil by deafult in the program
     //Difference between a ? and a ! -> ? does NOT unwrap the Optional, unlike the ! operator
@@ -56,16 +58,18 @@ class ViewController: UIViewController {
     //var operandStack: Array<Double> = Array<Double>()
     //^Considered bad form because the type can be inferred from Array<Double> after =
     
-    var operandStack = Array<Double>()
+    //var operandStack = Array<Double>()
     
     //Initializing instance of an Array of Doubles
     //NOTE: Some classes can have multiple initializers
+    
     @IBAction func enter() {
         userInMiddleOfTypingNumber = false
-        operandStack.append(displayValue)
-        
-        print("Operand Stack: \(operandStack)") //The \(..) notation also works for arrays like operandStack
-        
+        if let result = myBrain.pushOperand(displayValue){
+            displayValue = result
+        }else{
+            displayValue = 0 //This is if evaluate in CalculatorBrain returns nil!
+        }
     }
     
     //Computed Properties: We always want whatever is displayed in the display (display.text!) to be converted to a Double Object
@@ -82,69 +86,21 @@ class ViewController: UIViewController {
     }
     
     
-    
     @IBAction func operate(sender: UIButton) {
-        
-        let operation = sender.currentTitle!
         
         if userInMiddleOfTypingNumber {
             enter()
         }
         
-        //switch statement in Swift is just like the switch statement in JAVA
-        switch operation{
-            case "➕": performOperation(add)
-            case "➖": performOperation(subtract)
-            case "✖️": performOperation(multiply)
-            case "➗": performOperation(divide)
-            
-            //Even better implementation (does not require add, subtract, multiply, divide buttons
-            //case '+': performOperation{$0 + $1}
-            //...
-            case "℃": performOperation2(fToC)
-            default: break
-            
+        if let operation = sender.currentTitle {
+            if let result = myBrain.performOperation(operation){
+                displayValue = result
+            }else{
+                displayValue = 0
+            }
         }
         
     }
     
-    //Helper function that performs specified operation on the last two elements in operandStack and puts the outcome into operandStack
-    //This is possible because we can have function types in Swift!
-    func performOperation(operation: (Double, Double) -> Double){
-        if(operandStack.count >= 2){
-            displayValue = operation(operandStack.removeLast(), operandStack.removeLast())
-            enter()
-        }
-    }
-    
-    //Just the add, subtract, multiply, and divide methods will be defined below this 
-    //point in the code
-    func add(arg1: Double, arg2: Double) -> Double{
-        return arg1 + arg2
-    }
-    
-    func subtract(arg1: Double, arg2: Double) -> Double{
-        return arg1 - arg2
-    }
-    
-    func multiply(arg1: Double, arg2: Double) -> Double{
-        return arg1 * arg2
-    }
-    
-    func divide(arg1: Double, arg2: Double) -> Double{
-        return arg1/arg2
-    }
-    
-    //Method overloading, this is a second performOperation that will take in an operation with a single argument that returns a Double
-    func performOperation2(operation: Double -> Double){
-        if(operandStack.count >= 1){
-            displayValue = operation(operandStack.removeLast())
-            //enter() Took out the enter since the only 1 function operation on my calculator is Fahrenheit to Celsius conversion
-        }
-    }
-    
-    func fToC(fVal: Double) -> Double{
-        return (fVal-32.0)/9.0 * 5.0
-    }
 }
 
